@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package game;
+
+option java_package = "com.game.proto";
+option java_multiple_files = true;
+
+enum OpCode {
+  OP_CODE_UNSPECIFIED = 0;
+
+  LIST_LOBBIES = 1;
+  JOIN_LOBBY = 2;
+  CREATE_LOBBY = 3;
+  SEND_CHAT_MESSAGE = 4;
+}
+
+// İstemciden sunucuya gönderilecek
+message PlayerInput {
+  OpCode opcode = 1;
+  string message = 2;
+}
+
+message PlayerInfo{
+  string id = 1;
+  string name = 2;
+}
+
+// Sunucudaki bir lobinin durumu
+message LobbyState {
+  string lobbyId = 1;
+  bool isStarted = 2;
+  bool isPrivate = 3;
+  uint32 currentPlayers = 4;
+  uint32 maxPlayer = 5;
+  repeated PlayerInfo players = 6;
+}
+
+enum PlayerType{
+  X = 0;
+  O = 1;
+}
+
+message GameState{
+  repeated PlayerType map = 1;
+}
+
+// Sunucudan istemciye gönderilecek
+message CurrentLobbies {
+  repeated LobbyState lobbies = 1;
+}
