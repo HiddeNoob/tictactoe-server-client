@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Scanner;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.EOFException;
@@ -23,9 +24,12 @@ public class WebSocketConnection {
         try {
             InputStream in = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
-            String generatedId = performHandshake(in, out);
-            System.out.println("Handshake successful for client ID: " + generatedId.substring(0, 8));
-            return new WebSocketConnection(socket, in, out, generatedId);
+            performHandshake(in, out);
+            
+            // Her bağlantı için benzersiz bir ID oluştur
+            String uniqueId = UUID.randomUUID().toString();
+            System.out.println("Handshake successful for client ID: " + uniqueId.substring(0, 8));
+            return new WebSocketConnection(socket, in, out, uniqueId);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-1 algorithm not available, cannot run server.", e);
         }
@@ -38,18 +42,19 @@ public class WebSocketConnection {
         this.connectionId = connectionId;
     }
 
-    private static String performHandshake(InputStream in, OutputStream out) throws IOException, NoSuchAlgorithmException {
-        try(Scanner s = new Scanner(in, "UTF-8").useDelimiter("\\r\\n\\r\\n")){
+    private static void performHandshake(InputStream in, OutputStream out) throws IOException, NoSuchAlgorithmException {
+        Scanner s = new Scanner(in, "UTF-8").useDelimiter("\\r\\n\\r\\n");
+        try {
             String data = s.hasNext() ? s.next() : "";
 
             if (data.isEmpty()) throw new IOException("Client did not send a handshake request.");
-            
+
             Matcher get = Pattern.compile("^GET").matcher(data);
             if (!get.find()) throw new IOException("Not a valid WebSocket handshake request.");
-            
+
             Matcher match = Pattern.compile("Sec-WebSocket-Key: (.*)").matcher(data);
             if (!match.find()) throw new IOException("Sec-WebSocket-Key not found.");
-            
+
             String clientKey = match.group(1).trim();
             String magicString = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
             byte[] responseKeyBytes = MessageDigest.getInstance("SHA-1").digest((clientKey + magicString).getBytes("UTF-8"));
@@ -62,13 +67,14 @@ public class WebSocketConnection {
 
             out.write(response);
             out.flush();
-    
-            return responseKey;
 
-        }catch(Exception e){
+        } catch(Exception e) {
+            // Scanner'ı burada kapatmıyoruz, çünkü stream açık kalmalı.
+            // Hata durumunda sadece istisnayı yukarı iletiyoruz.
             throw e;
         }
-
+        // Scanner'ın close() metodu HİÇBİR ZAMAN çağrılmıyor.
+        // çağırınca websocketi kapatıyor dikkat etmek lazım
     }
 
     public byte[] readBinaryMessage() throws IOException {
@@ -119,6 +125,23 @@ public class WebSocketConnection {
     }
     
     public String getConnectionId() { return this.connectionId; }
-    public void close() throws IOException { if (socket != null && !socket.isClosed()) socket.close(); }
+    public void close() throws IOException { 
+        if (socket != null && !socket.isClosed()) {
+            try {
+                // Önce CLOSE frame gönder
+                out.write(0x88); // FIN bit + CLOSE opcode
+                out.write(0x00); // No payload
+                out.flush();
+                
+                // Biraz bekle, sonra socket'i kapat
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (IOException e) {
+                // Zaten kapatılmış olabilir, sorun yok
+            }
+            socket.close();
+        }
+    }
     public boolean isClosed() { return socket.isClosed(); }
 }

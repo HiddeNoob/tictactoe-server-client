@@ -24,10 +24,6 @@
 
     <build>
         <extensions>
-            <!-- ====================================================== -->
-            <!-- YENİ EKLENEN BÖLÜM: BU EKLENTİ SORUNU ÇÖZECEK -->
-            <!-- Bu eklenti, ${os.detected.classifier} gibi özellikleri ayarlar. -->
-            <!-- ====================================================== -->
             <extension>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
@@ -41,8 +37,7 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <!-- Artık ${os.detected.classifier} değişkeni düzgün çalışacak. -->
-                    <protocArtifact>com.google.protobuf:protoc:3.21.7:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                 </configuration>
                 <executions>
                     <execution>
@@ -58,7 +53,17 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>com.game.main.Server</mainClass>
+                    <mainClass>com.game.server.GameServer</mainClass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
         </plugins>

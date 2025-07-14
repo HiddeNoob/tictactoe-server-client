@@ -1,0 +1,20 @@
+:root { --cell-size: 100px; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+#main-container { min-width: 350px; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
+.hidden { display: none; }
+h1, h2, h3 { color: #333; }
+input, button { padding: 12px; margin: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; width: calc(100% - 30px); }
+button { cursor: pointer; background: #007bff; color: white; border-color: #007bff; font-weight: bold; }
+button:hover { background: #0056b3; }
+#lobby-list { margin-top: 1rem; }
+#lobby-list .lobby { padding: 10px; border: 1px solid #eee; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+#player-names { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+.player-name { font-weight: bold; font-size: 1.1rem; color: #495057; padding: 8px 12px; background: white; border-radius: 6px; min-width: 120px; text-align: center; }
+.player-name.host { border-left: 4px solid #28a745; }
+.player-name.opponent { border-left: 4px solid #dc3545; }
+#game-board { display: grid; grid-template-columns: repeat(3, var(--cell-size)); grid-gap: 5px; margin: 20px auto; width: calc(3 * var(--cell-size) + 10px); }
+.cell { width: var(--cell-size); height: var(--cell-size); background: #e9ecef; display: flex; justify-content: center; align-items: center; font-size: 3.5rem; font-weight: bold; cursor: pointer; border-radius: 4px; transition: background-color 0.2s; }
+.cell:hover { background-color: #dee2e6; }
+.cell.X { color: #dc3545; }
+.cell.O { color: #17a2b8; }
+#leave-game-btn { background-color: #6c757d; margin-top: 20px; }
